@@ -1,0 +1,44 @@
+﻿@{ 
+	Layout = null; // Не использовать мастер-старница 
+}
+
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>
+			Index
+		</title>
+	</head>
+
+	<body>
+		<h3>
+			Товары интернет-магазина PhoneMarket
+		</h3>
+		<br />
+
+		<table>
+			<thead>
+				<tr>
+					<td>Название</td>
+					<td>Производитель</td>
+					<td>Цена (руб)</td>
+					<td></td>
+				</tr>
+			</thead>
+			<tbody>
+				@{ 
+					foreach ( var phone in ViewBag.Phones) {
+				<tr>
+					<td>@phone.Name</td>
+					<td>@phone.Produser</td>
+					<td>@phone.Price</td>
+					<td><a href="/Home/Buy/@phone.Id">Купить</a></td>
+
+				</tr>
+					}
+				}
+			</tbody>
+		</table>
+	</body>
+</html>
