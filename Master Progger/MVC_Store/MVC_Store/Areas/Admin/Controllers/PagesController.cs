@@ -215,5 +215,23 @@ namespace MVC_Store.Areas.Admin.Controllers
                 }
             }
         }
+
+        //GET : Admin/Pages/EditSidebar
+        [HttpGet]
+        public ActionResult EditSidebar()
+        {
+            //Объявляем модель
+            SidebarVM model;
+
+            using (Db db = new Db()) {
+                //Получаем данные из DTO
+                SidebarDTO dto = db.Sidebars.Find(1);
+                //Заполняем модель данными 
+                model = new SidebarVM(dto);
+
+            }
+            //Вернуть преставление с моделью
+            return View(model);
+        }
     }
 }
