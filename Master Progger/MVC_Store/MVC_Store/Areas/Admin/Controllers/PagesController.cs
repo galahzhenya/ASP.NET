@@ -194,5 +194,26 @@ namespace MVC_Store.Areas.Admin.Controllers
             //Переадресовываем пользователя на страницу Index
             return RedirectToAction("Index");
         }
+
+        //Создаем метот сортировки
+		//POST : "/Admin/Pages/ReorderPages
+        [HttpPost]
+        public void ReorderPages(int[] id)
+        {
+            using (Db db = new Db()) {
+                //Реализуем начальный счетчик 
+                int count = 1;
+                //Инициализируем модель данных
+                PagesDTO dto;
+                //Устанавливаем сортировку для каждой страницы
+                foreach (var pageId in id) {
+                    dto = db.Pages.Find(pageId);
+                    dto.Sorting = count;
+
+                    db.SaveChanges();
+                    count++;
+                }
+            }
+        }
     }
 }

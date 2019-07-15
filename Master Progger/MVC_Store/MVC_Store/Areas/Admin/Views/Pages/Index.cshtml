@@ -14,8 +14,8 @@
 <p>
     @Html.ActionLink("Create New Page", "AddPage","",new { @class = "btn btn-success"})
 </p>
-<table class="table">
-    <tr>
+<table class="table sorting" id="pages">
+    <tr class="home">
         <th>
             Title
         </th>
@@ -29,10 +29,13 @@
     </tr>
 
 @foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Title)
-        </td>
+    <tr id="id_@item.Id" class="@item.Slug">
+		<td>
+			@if (item.Slug != "home") { 
+				<span class="ui-icon ui-icon-arrowthick-2-n-s"></span>
+			}
+			@Html.DisplayFor(modelItem => item.Title)
+		</td>
         <td>
             @Html.DisplayFor(modelItem => item.Slug)
         </td>
@@ -62,6 +65,19 @@
 			//Confirm page deletion
 			$("a.delete").click(function () {
 				if (!confirm("Confirm page deletion")) return false;
+			});
+
+			//Sorting script
+			$("table#pages tbody").sortable({
+				items: "tr:not(.home)",
+				placeholder: "ui-state-highlight",
+				update: function () {
+					var ids = $("table#pages tbody").sortable("serialize");
+					var url = "/Admin/Pages/ReorderPages";
+					$.post(url, ids, function (data) {
+
+					});
+				}
 			});
 		});
 	</script>
