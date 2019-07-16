@@ -19,10 +19,10 @@
 					@Html.ActionLink("Pages", "Index", "Pages", "", new { @class = "nav-link" })
 				</li>
 				<li class="nav-item">
-					<a class="nav-link" href="#">Features</a>
+					@Html.ActionLink("Sidebar", "EditSidebar", "Pages", "", new { @class = "nav-link" })
 				</li>
 				<li class="nav-item">
-					<a class="nav-link" href="#">Pricing</a>
+					<!--<a class="nav-link" href="#">Pricing</a>
 				</li>
 			</ul>
 
@@ -48,7 +48,7 @@
 	@Scripts.Render("~/bundles/jquery")
 	<!--Подключаю бандлы к шаблону админ зоны-->
 	@Scripts.Render("~/bundles/jqueryui")
-
+	@Scripts.Render("~/bundles/ckeditor")
 	@Scripts.Render("~/bundles/bootstrap")
 	@RenderSection("scripts", required: false)
 </body>

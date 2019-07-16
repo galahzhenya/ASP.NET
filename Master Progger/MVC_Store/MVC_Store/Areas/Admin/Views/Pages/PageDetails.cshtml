@@ -1,7 +1,7 @@
 ﻿@model MVC_Store.Models.VievMidels.Pages.PageVM
 
 @{
-    ViewBag.Title = "PageDetails";
+    ViewBag.Title = "Page Details";
 }
 
 <h2>Page Details</h2>
@@ -31,15 +31,7 @@
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.Body)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Sorting)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.HasSidebar)
+            @Html.Raw(Model.Body)
         </dd>
 
     </dl>
