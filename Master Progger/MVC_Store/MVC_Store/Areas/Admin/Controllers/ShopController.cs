@@ -91,5 +91,25 @@ namespace MVC_Store.Areas.Admin.Controllers
             return RedirectToAction("Categories");
         }
 
+        //POST  admin/shop/RenameCategory
+        [HttpPost]
+        public string RenameCategory(string newCatName, int id)
+        {
+            using (Db db = new Db()) {
+                //Проверим имя на уникальность
+                if (db.Categories.Any(x =>x.Name == newCatName)) {
+                    return "titletaken";
+                }
+                //Получаем класс dto
+                CategoryDTO dto = db.Categories.Find(id);
+                //Редактируем модел dto
+                dto.Name = newCatName;
+                dto.Slug = newCatName.Replace(" ", "-").ToLower();
+                //Сохраняем изменения
+                db.SaveChanges();
+            }
+            //Возвращаем слово (потому что мето должен хоть что-то возращать
+            return "ok";
+        }
     }
 }
