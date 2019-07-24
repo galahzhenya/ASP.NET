@@ -111,5 +111,21 @@ namespace MVC_Store.Areas.Admin.Controllers
             //Возвращаем слово (потому что мето должен хоть что-то возращать
             return "ok";
         }
+
+        //Создаем метод добавления товаров 
+        //GET : /admin/shop/AddProduct/
+
+        public ActionResult AddProduct()
+        {
+            //Объявляем модель данных
+            ProductVM model = new ProductVM();
+
+            //Добавляем список категорий из базы в модель
+            using (Db db = new Db()) {
+                model.Categories = new SelectList(db.Categories.ToList(), "id","Name");
+            }
+            //Вернуть модель в представление 
+            return View(model);
+        }
     }
 }
