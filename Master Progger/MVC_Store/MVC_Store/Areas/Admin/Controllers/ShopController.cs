@@ -2,8 +2,10 @@
 using MVC_Store.Models.VievMidels.Shop;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Web;
+using System.Web.Helpers;
 using System.Web.Mvc;
 
 namespace MVC_Store.Areas.Admin.Controllers
@@ -114,7 +116,7 @@ namespace MVC_Store.Areas.Admin.Controllers
 
         //Создаем метод добавления товаров 
         //GET : /admin/shop/AddProduct/
-
+        [HttpGet]
         public ActionResult AddProduct()
         {
             //Объявляем модель данных
@@ -126,6 +128,115 @@ namespace MVC_Store.Areas.Admin.Controllers
             }
             //Вернуть модель в представление 
             return View(model);
+        }
+
+        //Создаем метод добавления товаров 
+        //POST : /admin/shop/AddProduct/
+        [HttpPost]
+        public ActionResult AddProduct(ProductVM model, HttpPostedFileBase file)
+        {
+            //Проверить модель на валидность 
+            if (!ModelState.IsValid) {
+                using (Db db = new Db()) {
+                    model.Categories = new SelectList(db.Categories.ToList(), "Id", "Name");
+                    return View(model);
+                }
+            }
+            //Проверить имя продукта на уникальность 
+            using (Db db = new Db()) {
+                if (db.Products.Any(x => x.Name == model.Name)) {
+                    model.Categories = new SelectList(db.Categories.ToList(), "Id", "Name");
+                    ModelState.AddModelError("", "That product name is talen!");
+                    return View(model);
+                }
+            }
+            //Объявляем переменную ProductId 
+            int id;
+            //Инициализируем и сохраняем в базу  на основе ProductDTO
+            using (Db db = new Db()) {
+                ProductDTO product = new ProductDTO();
+                product.Name = model.Name;
+                product.Slug = model.Name.Replace(" ", "_").ToLower();
+                product.Description = model.Description;
+                product.Price = model.Price;
+                product.CategoryId = model.CategoryId;
+
+                CategoryDTO catDTO = db.Categories.FirstOrDefault(x => x.Id == model.CategoryId);
+                product.CategoryName = catDTO.Name;
+
+                db.Products.Add(product);
+                db.SaveChanges();
+
+                id = product.Id;
+            }
+            //Добавить сообщение пользователю 
+            TempData["SM"] = "You have added a product";
+
+            #region Upload Image
+            //Создать необходимые ссылки дериктории  (пути куда сохранять фото) 
+            var originalDirectory = new DirectoryInfo(string.Format($"{Server.MapPath(@"\")}Imeges\\Uploads"));
+            var pathString1 = Path.Combine(originalDirectory.ToString(), "Products");
+            var pathString2 = Path.Combine(originalDirectory.ToString(), "Products\\"+id.ToString());
+            var pathString3 = Path.Combine(originalDirectory.ToString(), "Products" + id.ToString() + "\\Thumbs");
+            var pathString4 = Path.Combine(originalDirectory.ToString(), "Products" + id.ToString() + "\\Gallery");
+            var pathString5 = Path.Combine(originalDirectory.ToString(), "Products" + id.ToString() + "\\Gallery\\Thumbs");
+            //Проверяем наличие директории (если нет - создаем)
+            if (!Directory.Exists(pathString1)) {
+                Directory.CreateDirectory(pathString1);
+            }
+            if (!Directory.Exists(pathString2)) {
+                Directory.CreateDirectory(pathString2);
+            }
+            if (!Directory.Exists(pathString3)) {
+                Directory.CreateDirectory(pathString3);
+            }
+            if (!Directory.Exists(pathString4)) {
+                Directory.CreateDirectory(pathString4);
+            }
+            if (!Directory.Exists(pathString5)) {
+                Directory.CreateDirectory(pathString5);
+            }
+
+            //Проверяем был ли уже такой файл загружен 
+            if (file != null && file.ContentLength > 0) {
+                //Получаем расширение файла
+                string ext = file.ContentType.ToLower();
+                //Проверяем расширение файла 
+                if (ext != "image/jpg" &&
+                    ext != "image/jpeg" &&
+                    ext != "image/pjpeg" &&
+                    ext != "image/gif" &&
+                    ext != "image/x-png" &&
+                    ext != "image/png") {
+
+                    using (Db db = new Db()) {
+                        model.Categories = new SelectList(db.Categories.ToList(), "Id", "Name");
+                        ModelState.AddModelError("", "The image was not uploaded - wrong image extension");
+                        return View(model);
+                    }
+                }
+
+                //Переменная с именем изображения (Объявляем) 
+                string imageName = file.FileName;
+                //Сохраняем изображение в модель DTO
+                using (Db db = new Db()) {
+                    ProductDTO dto = db.Products.Find(id);
+                    dto.ImageName = imageName;
+                    db.SaveChanges();
+                }
+                //Назначаем пути к оригинальному и уменшенному изображению 
+                var path = string.Format($"{pathString2}\\{imageName}"); //Оригинальное изображение
+                var path2 = string.Format($"{pathString3}\\{imageName}"); // Уменьшенное 
+                //Сохраняем оригиналльное изображение 
+                file.SaveAs(path);
+                //Создаем и сохраняем уменьшенную 
+                WebImage img = new WebImage(file.InputStream);
+                img.Resize(200, 200);
+                img.Save(path2);
+            }
+            #endregion
+            //Переадресовать пользователя 
+            return RedirectToAction("AddProduct");
         }
     }
 }
