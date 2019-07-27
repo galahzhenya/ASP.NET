@@ -168,3 +168,7 @@ D:\ASP.NET\Git\Master Progger\MVC_Store\MVC_Store\obj\Debug\MVC_Store.csproj.Cor
 D:\ASP.NET\Git\Master Progger\MVC_Store\MVC_Store\obj\Debug\MVC_Store.csproj.CopyComplete
 D:\ASP.NET\Git\Master Progger\MVC_Store\MVC_Store\obj\Debug\MVC_Store.dll
 D:\ASP.NET\Git\Master Progger\MVC_Store\MVC_Store\obj\Debug\MVC_Store.pdb
+D:\ASP.NET\Git\Master Progger\MVC_Store\MVC_Store\bin\PagedList.dll
+D:\ASP.NET\Git\Master Progger\MVC_Store\MVC_Store\bin\PagedList.Mvc.dll
+D:\ASP.NET\Git\Master Progger\MVC_Store\MVC_Store\bin\PagedList.xml
+D:\ASP.NET\Git\Master Progger\MVC_Store\MVC_Store\bin\PagedList.Mvc.xml

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Helpers;
 using System.Web.Mvc;
+using PagedList;
 
 namespace MVC_Store.Areas.Admin.Controllers
 {
@@ -174,12 +175,12 @@ namespace MVC_Store.Areas.Admin.Controllers
 
             #region Upload Image
             //Создать необходимые ссылки дериктории  (пути куда сохранять фото) 
-            var originalDirectory = new DirectoryInfo(string.Format($"{Server.MapPath(@"\")}Imeges\\Uploads"));
+            var originalDirectory = new DirectoryInfo(string.Format($"{Server.MapPath(@"\")}Images\\Uploads"));
             var pathString1 = Path.Combine(originalDirectory.ToString(), "Products");
-            var pathString2 = Path.Combine(originalDirectory.ToString(), "Products\\"+id.ToString());
-            var pathString3 = Path.Combine(originalDirectory.ToString(), "Products" + id.ToString() + "\\Thumbs");
-            var pathString4 = Path.Combine(originalDirectory.ToString(), "Products" + id.ToString() + "\\Gallery");
-            var pathString5 = Path.Combine(originalDirectory.ToString(), "Products" + id.ToString() + "\\Gallery\\Thumbs");
+            var pathString2 = Path.Combine(originalDirectory.ToString(), "Products\\" + id.ToString());
+            var pathString3 = Path.Combine(originalDirectory.ToString(), "Products\\" + id.ToString() + "\\Thumbs");
+            var pathString4 = Path.Combine(originalDirectory.ToString(), "Products\\" + id.ToString() + "\\Gallery");
+            var pathString5 = Path.Combine(originalDirectory.ToString(), "Products\\" + id.ToString() + "\\Gallery\\Thumbs");
             //Проверяем наличие директории (если нет - создаем)
             if (!Directory.Exists(pathString1)) {
                 Directory.CreateDirectory(pathString1);
@@ -237,6 +238,31 @@ namespace MVC_Store.Areas.Admin.Controllers
             #endregion
             //Переадресовать пользователя 
             return RedirectToAction("AddProduct");
+        }
+
+        //Создаем метод списка товаров 
+        //POST : /admin/shop/Products/
+        [HttpGet]
+        public ActionResult Products (int? page, int? catId)
+        {
+            //Объявляем модель ProductVM типа List
+            List<ProductVM> listOfProductVM;
+            //Устанавливаем номер страницы
+            var pageNumber = page ?? 1;
+            using (Db db = new Db()) {
+                //Инициализируем List и заполняем данными 
+                listOfProductVM = db.Products.ToArray()
+                    .Where(x => catId == null || catId == 0 || x.CategoryId == catId).Select(x => new ProductVM(x)).ToList();
+                //Заполняем категории данными для сортировки
+                ViewBag.Categories = new SelectList(db.Categories.ToList(), "Id","Name");
+                //Устанавливаем выбранную категорию
+                ViewBag.SelectedCat = catId.ToString();
+            }
+            //Устанавливаем постраничную навигацию 
+            var onePageOfProducts = listOfProductVM.ToPagedList(pageNumber, 3);
+            ViewBag.onePageOfProducts = onePageOfProducts;
+            //Возвращаем представление с данными 
+            return View(listOfProductVM);
         }
     }
 }
