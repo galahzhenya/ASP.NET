@@ -264,5 +264,82 @@ namespace MVC_Store.Areas.Admin.Controllers
             //Возвращаем представление с данными 
             return View(listOfProductVM);
         }
+
+        //GET : /admin/shop/EditProduct/
+        [HttpGet]
+        public ActionResult EditProduct(int id)
+        {
+            //Обьявляем модель ProductVM
+            ProductVM model;
+            
+            using (Db db = new Db()) {
+                //Получаем продукт
+                ProductDTO dto = db.Products.Find(id);
+                //Проверяем, доступен ли продукт
+                if (dto == null) {
+                    return Content("That product does not exist.");
+                }
+                //Инициализируем модель данными 
+                model = new ProductVM(dto);
+                //Создаем список категорий 
+                model.Categories = new SelectList(db.Categories.ToList(), "Id", "Name");
+                //Получаем все изображения из галереи
+                model.GalleryImages = Directory.EnumerateFiles(Server.MapPath("~/Images/Uploads/Products/"+id+"/Gallery/Thumbs"))
+                    .Select(fileName => Path.GetFileName(fileName));
+            }
+            //Возвращаем модель в редставление 
+            return View(model);
+        }
+
+        //POst : /admin/shop/EditProduct/
+        [HttpPost]
+        public ActionResult EditProduct(ProductVM model, HttpPostedFileBase file)
+        {
+            //Получение Id
+            int id = model.Id;
+            //Заполняем список категориями и изображениями 
+            using (Db db = new Db()) {
+                model.Categories = new SelectList(db.Categories.ToList(), "Id", "Name");
+            }
+
+            model.GalleryImages = Directory.EnumerateFiles(Server.MapPath("~/Images/Uploads/Products/" + id + "/Gallery/Thumbs"))
+                    .Select(fileName => Path.GetFileName(fileName));
+            //Проверка модели на валидность 
+            if (!ModelState.IsValid) {
+                return View(model);
+            }
+            //Проверка имя продукта на уникальность 
+            using (Db db = new Db()) {
+                if (db.Products.Where(x => x.Id != id).Any(x => x.Name == model.Name)) {
+                    ModelState.AddModelError("", "That product name is taken!");
+                    return View(model);
+                }
+            }
+            //Обновляем продукт 
+            using (Db db = new Db()) {
+                ProductDTO dto = db.Products.Find(id);
+
+                dto.Name = model.Name;
+                dto.Slug = model.Name.Replace(" ", "-").ToLower();
+                dto.Description = model.Description;
+                dto.Price = model.Price;
+                dto.CategoryId = model.CategoryId;
+                dto.ImageName = model.ImageName;
+
+                CategoryDTO catDTO = db.Categories.FirstOrDefault(x => x.Id == model.CategoryId);
+                dto.CategoryName = catDTO.Name;
+                db.SaveChanges();
+            }
+            //Уведомление
+            TempData["SM"] = "You have adited the product!";
+
+            //Логика обработки изображений 
+            #region Image Upload
+            #endregion
+
+            //Переадресация пользователя 
+            return RedirectToAction("EditProduct");
+
+        }
     }
 }
