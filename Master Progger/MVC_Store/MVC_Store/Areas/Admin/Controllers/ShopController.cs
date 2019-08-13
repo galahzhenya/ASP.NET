@@ -291,7 +291,7 @@ namespace MVC_Store.Areas.Admin.Controllers
             return View(model);
         }
 
-        //POst : /admin/shop/EditProduct/
+        //POST : /admin/shop/EditProduct/
         [HttpPost]
         public ActionResult EditProduct(ProductVM model, HttpPostedFileBase file)
         {
@@ -335,11 +335,76 @@ namespace MVC_Store.Areas.Admin.Controllers
 
             //Логика обработки изображений 
             #region Image Upload
-            #endregion
+            //Проверяем загрузку файла 
+            if (file != null && file.ContentLength > 0) {
+                //Получаем расширение файла
+                string ext = file.ContentType.ToLower();
+                //Проверяем расширение файла 
+                if (ext != "image/jpg" &&
+                   ext != "image/jpeg" &&
+                   ext != "image/pjpeg" &&
+                   ext != "image/gif" &&
+                   ext != "image/x-png" &&
+                   ext != "image/png") {
 
+                    using (Db db = new Db()) {
+                        ModelState.AddModelError("", "The image was not uploaded - wrong image extension");
+                        return View(model);
+                    }
+                }
+                //Устанавливаем пути загрузки 
+                var originalDirectory = new DirectoryInfo(string.Format($"{Server.MapPath(@"\")}Images\\Uploads"));
+                var pathString1 = Path.Combine(originalDirectory.ToString(), "Products\\" + id.ToString());
+                var pathString2 = Path.Combine(originalDirectory.ToString(), "Products\\" + id.ToString() + "\\Thumbs");
+                //Удаляем существубщие файлы и директории 
+                DirectoryInfo di1 = new DirectoryInfo(pathString1);
+                DirectoryInfo di2 = new DirectoryInfo(pathString2);
+
+                foreach (var file2 in di1.GetFiles()) {
+                    file2.Delete();
+                }
+                foreach (var file3 in di2.GetFiles()) {
+                    file3.Delete();
+                }
+                //Сохраняем изображение 
+                string imageName = file.FileName;
+                using(Db db = new Db()) {
+                    ProductDTO dto = db.Products.Find(id);
+                    dto.ImageName = imageName;
+                    db.SaveChanges();
+                }
+                //Сохраняем оригинал и превью версии 
+                var path = string.Format($"{pathString1}\\{imageName}"); //Оригинальное изображение
+                var path2 = string.Format($"{pathString2}\\{imageName}"); // Уменьшенное 
+                //Сохраняем оригиналльное изображение 
+                file.SaveAs(path);
+                //Создаем и сохраняем уменьшенную 
+                WebImage img = new WebImage(file.InputStream);
+                img.Resize(200, 200);
+                img.Save(path2);
+            }
+            #endregion
             //Переадресация пользователя 
             return RedirectToAction("EditProduct");
+        }
 
+        //POST : /admin/shop/DeleteProduct/
+        public ActionResult DeleteProduct(int id)
+        {
+            //Удаляем товар из базы данных
+            using (Db db = new Db()) {
+                ProductDTO dto = db.Products.Find(id);
+                db.Products.Remove(dto);
+                db.SaveChanges();
+            }
+            //Удаляем директории изображения товара
+            var originalDirectory = new DirectoryInfo(string.Format($"{Server.MapPath(@"\")}Images\\Uploads"));
+            var pathString = Path.Combine(originalDirectory.ToString(), "Products\\" + id.ToString());
+            if (Directory.Exists(pathString)) {
+                Directory.Delete(pathString, true);
+            }
+            //Переадресовываем пользователя
+            return RedirectToAction("Products");
         }
     }
 }
