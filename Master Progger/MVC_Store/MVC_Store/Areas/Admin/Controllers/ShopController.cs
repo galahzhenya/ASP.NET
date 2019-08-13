@@ -406,5 +406,43 @@ namespace MVC_Store.Areas.Admin.Controllers
             //Переадресовываем пользователя
             return RedirectToAction("Products");
         }
+
+        //Добавление изображения в галлерею
+        //POST : /admin/shop/SaveGalleryImages/
+        public void SaveGalleryImages(int id)
+        {
+            //Перебор всех полученных файлов из представления
+            foreach (string fileName in Request.Files) {
+                //Инициализируем файлы
+                HttpPostedFileBase file = Request.Files[fileName];
+                //Проверка на пустое значение
+                if (file != null & file.ContentLength > 0) {
+                    //Назначаем пути к директориям
+                    var originalDirectory = new DirectoryInfo(string.Format($"{Server.MapPath(@"\")}Images\\Uploads"));
+                    string pathString1 = Path.Combine(originalDirectory.ToString(), "Products\\" + id.ToString() + "\\Gallery");
+                    string pathString2 = Path.Combine(originalDirectory.ToString(), "Products\\" + id.ToString() + "\\Gallery\\Thumbs");
+                    //Назначаем пути изображений
+                    var path = string.Format($"{pathString1}\\{file.FileName}");
+                    var path2 = string.Format($"{pathString2}\\{file.FileName}");
+                    //Сохраняем оригинальные и уменьшенный копии
+                    file.SaveAs(path);
+                    WebImage img = new WebImage(file.InputStream);
+                    img.Resize(200, 200);
+                    img.Save(path2);
+                }
+            }
+        }
+
+        public void DeleteImage (int id, string imageName)
+        {
+            string fullPath1 = Request.MapPath("~/Images/Uploads/Products/" + id.ToString() + "/Gallery/" + imageName);
+            string fullPath2 = Request.MapPath("~/Images/Uploads/Products/" + id.ToString() + "/Gallery/Thumbs/" + imageName);
+            if (System.IO.File.Exists(fullPath1)) {
+                System.IO.File.Delete(fullPath1);
+            }
+            if (System.IO.File.Exists(fullPath2)) {
+                System.IO.File.Delete(fullPath2);
+            }
+        }
     }
 }
