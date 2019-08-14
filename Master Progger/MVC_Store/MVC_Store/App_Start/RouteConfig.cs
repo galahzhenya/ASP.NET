@@ -16,6 +16,8 @@ namespace MVC_Store
             routes.MapRoute("Pages","{page}", new { controller = "Pages", action = "Index"}, new[] { "MVC_Store.Controllers" });
             routes.MapRoute("Default","", new { controller = "Pages", action = "Index"}, new[] { "MVC_Store.Controllers" });
             routes.MapRoute("PagesMenuPartial", "Pages/PagesMenuPartial", new { controller = "Pages", action = "PagesMenuPartial" }, new[] { "MVC_Store.Controllers" });
+            routes.MapRoute("SidebarPartial", "Pages/SidebarPartial", new { controller = "Pages", action = "SidebarPartial" }, new[] { "MVC_Store.Controllers" });
+            routes.MapRoute("Shop", "Shop/{action}/{name}", new { controller = "Shop", action = "Index",  name = UrlParameter.Optional }, new[] { "MVC_Store.Controllers" });
 
 
             //routes.MapRoute(
